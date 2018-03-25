@@ -1,6 +1,8 @@
 ---
+layout: post
 title: Importance of coding convention and its practice
 date: 2017-07-10 23:30:09
+comments: true
 categories:
 - Computer Science 
 tags:
