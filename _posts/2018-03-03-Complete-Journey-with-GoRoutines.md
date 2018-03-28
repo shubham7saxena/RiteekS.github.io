@@ -20,7 +20,7 @@ In very simple words, concurrency means dealing with a lot of things at once(doe
 In this blog, I will mainly be talking about 
 * [What are Go Routines?](#what-are-go-routines)
 * [How are they different from threads?](#how-are-they-different-from-threads)
-* [Scheduling of Go Routines](#how-are-they-scheduled?)
+* [Scheduling of Go Routines](#scheduling-of-go-routines)
 * [Common mistakes while using Go Routines and how to avoid them?](#common-mistakes-while-using-go-routines-and-how-to-avoid-them?)
 
 ## What are Go Routines?
@@ -83,7 +83,7 @@ GoRoutines have benefit over threads in:
 
 **Switch cost:** This difference is mainly because of the difference in the scheduling of goroutines and threads. Threads are scheduled *preemptively* (If a process is running for more than a scheduler time slice, it would preempt the process and schedule execution of another runnable process on the same CPU), the schedular needs to save/restore all registers i.e. 16 general purpose registers, PC (Program Counter), SP (Stack Pointer), segment registers etc. While Go routines are scheduled *cooperatively*,(explained in the scheduling section) they do not directly talk to the OS kernel. When a goroutine switch occurs very few registers(say 3) like program counter and stack pointer need to be saved/restored. For more details refer [this](https://electronics.stackexchange.com/questions/115286/what-processor-registers-are-saved-and-recovered-in-a-context-switch).
 
-## How are they scheduled?
+## Scheduling of Go Routines
 
 As I have mentioned in the last paragraph that goroutines are cooperatively scheduled. In cooperative scheduling there is no concept of scheduler time slice, in this scheduling goroutines yield the control periodically when they are idle or logically blocked in order to run multiple goroutines concurrently.
 The switch between goroutines happens only at well defined points, when an explicit call is made to the Go runtime scheduler. And those well defined points are like:
