@@ -13,7 +13,7 @@ tags:
 
 GoRoutines are mainly related to the concurrency model in Golang. Whenever we want things to be done concurrently we use goroutines. 
 Wait. What is concurrency? 
-In very simple words, concurrency means dealing with a lot of things at once(does need to be at the same time). For example, I am typing and I am thirsty then I will stop typing then drink water and then start typing again. Here I am dealing with two jobs(typing and drinking water) by some time slice which is said to be concurrent jobs.
+In very simple words, concurrency means dealing with a lot of things at once(does not need to be at the same time). For example, I am typing and I am thirsty then I will stop typing then drink water and then start typing again. Here I am dealing with two jobs(typing and drinking water) by some time slice which is said to be concurrent jobs.
 
 ## Overview 
 
@@ -24,7 +24,7 @@ In this blog, I will mainly be talking about 
 * [Common mistakes while using Go Routines and how to avoid them?](#common-mistakes-while-using-go-routines-and-how-to-avoid-them?)
 
 ## What are Go Routines?
-GoRoutines are the way of doing the jobs concurrently. They allow us to create and run the multiple methods or functions concurrently in the same address space inexpensively. We can say that the idea of GoRoutines are inspired by CoRoutines. IMO the only difference is that CoRoutines supports the explicit mean of transferring the control to other CoRoutines while GoRoutines have it implicitly. (This point will get clearer in the scheduling section of this block). GoRoutines are lightweight abstraction over threads, because their creation and destruction are very cheap as compared to threads and they are scheduled over OS threads. 
+GoRoutines are the way of doing the jobs concurrently. They allow us to create and run the multiple methods or functions concurrently in the same address space inexpensively. We can say that the idea of GoRoutines are inspired by CoRoutines. In my opinion the only difference is that CoRoutines supports the explicit mean of transferring the control to other CoRoutines while GoRoutines have it implicitly. (This point will get clearer in the scheduling section of this block). GoRoutines are lightweight abstraction over threads, because their creation and destruction are very cheap as compared to threads and they are scheduled over OS threads. 
 Executing the methods in the background is as easy as prepending the word `go` in a function call. Let’s see with a simple example.
 
 ```go
@@ -107,7 +107,7 @@ In any particular Go application the number of processors is equal to the GOMAXP
 </p>
 
 
-Every P has a local goroutine queue and also there is a global goroutine queue which contains runnable goroutine. Each M should be assigned to a P. Ps may have no Ms if they are blocked or in a system call. At any time, there are at most GOMAXPROCS number of P and only one M can run per P. More Ms can be created by the scheduler if required.
+Every P has a local goroutine queue and also there is a global goroutine queue which contains runnable goroutines. Each M should be assigned to a P. Ps may have no Ms if they are blocked or in a system call. At any time, there are at most GOMAXPROCS number of P and only one M can run per P. More Ms can be created by the scheduler if required.
 
 
 In each round of scheduling scheduler finds a runnable G and execute it. Once a runnable G is found, it is executed until it is blocked(as explained above). Very rarely scheduler search for G in the global queue(like 1/70 times) if it does not find any G there then it finds in the local queue if there also it does get any G then it try to steal from other Ps(Fig 3) if again it does not get any G then it again try to search in the global queue.
