@@ -15,7 +15,7 @@ GoRoutines are mainly related to the concurrency model in Golang. Whenever we wa
 Wait. What is concurrency? 
 In very simple words, concurrency means dealing with a lot of things at once(does not need to be at the same time). For example, I am typing and I am thirsty then I will stop typing then drink water and then start typing again. Here I am dealing with two jobs(typing and drinking water) by some time slice which is said to be concurrent jobs.
 
-## Overview 
+## <span style="color:#333168"> Overview </span> 
 
 In this blog, I will mainly be talking about 
 * [What are Go Routines?](#what-are-go-routines)
@@ -23,7 +23,7 @@ In this blog, I will mainly be talking about 
 * [Scheduling of Go Routines](#scheduling-of-go-routines)
 * [Common mistakes while using Go Routines and how to avoid them?](#common-mistakes-while-using-go-routines-and-how-to-avoid-them?)
 
-## What are Go Routines?
+## <span style="color:#333168"> What are Go Routines? </span>
 GoRoutines are the way of doing the jobs concurrently. They allow us to create and run the multiple methods or functions concurrently in the same address space inexpensively. We can say that the idea of GoRoutines are inspired by CoRoutines. In my opinion the only difference is that CoRoutines supports the explicit mean of transferring the control to other CoRoutines while GoRoutines have it implicitly. (This point will get clearer in the scheduling section of this block). GoRoutines are lightweight abstraction over threads, because their creation and destruction are very cheap as compared to threads and they are scheduled over OS threads. 
 Executing the methods in the background is as easy as prepending the word `go` in a function call. Let’s see with a simple example.
 
@@ -65,7 +65,7 @@ To understand this we need to know how goroutines are executed? In Golang unlike
 
 *Using sleep in the main Goroutine is a hack we are using here just to understand how Goroutines work. Mainly we use [channels](https://www.sohamkamani.com/blog/2017/08/24/golang-channels-explained/) to block the main Goroutine until all other Goroutines finish their execution.*
 
-## How are they different from threads?
+## <span style="color:#333168"> How are they different from threads? </span>
 
 Many people think that Goroutines are faster than threads. This is not entirely correct. It’s not any faster,but it allows you to do things concurrently. If things are right, the runtime will also split the work across multiple processors. So you_may_get parallelism out of it, too. But think of it as a way of doing things concurrently. If task A is blocked on something (waiting on I/O), the scheduler understands that another goroutine that’s ready to run can be executed while waiting for the I/O to return.
 
@@ -83,7 +83,7 @@ GoRoutines have benefit over threads in:
 
 **Switch cost:** This difference is mainly because of the difference in the scheduling of goroutines and threads. Threads are scheduled *preemptively* (If a process is running for more than a scheduler time slice, it would preempt the process and schedule execution of another runnable process on the same CPU), the schedular needs to save/restore all registers i.e. 16 general purpose registers, PC (Program Counter), SP (Stack Pointer), segment registers etc. While Go routines are scheduled *cooperatively*,(explained in the scheduling section) they do not directly talk to the OS kernel. When a goroutine switch occurs very few registers(say 3) like program counter and stack pointer need to be saved/restored. For more details refer [this](https://electronics.stackexchange.com/questions/115286/what-processor-registers-are-saved-and-recovered-in-a-context-switch).
 
-## Scheduling of Go Routines
+## <span style="color:#333168"> Scheduling of Go Routines </span>
 
 As I have mentioned in the last paragraph that goroutines are cooperatively scheduled. In cooperative scheduling there is no concept of scheduler time slice, in this scheduling goroutines yield the control periodically when they are idle or logically blocked in order to run multiple goroutines concurrently.
 The switch between goroutines happens only at well defined points, when an explicit call is made to the Go runtime scheduler. And those well defined points are like:
