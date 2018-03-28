@@ -65,6 +65,9 @@ $jekyll-config-map : (
   {% endfor %}
 );
 
+h2 {
+  color: #333168;
+}
 
 @function jekyll-config($key) {
   @return map-get($jekyll-config-map, $key);
