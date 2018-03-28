@@ -134,15 +134,17 @@ In each round of scheduling scheduler finds a runnable G and execute it. Once a 
 ## Common mistakes while using Go Routines and how to avoid them?
 If we are not aware about how goroutines internally work then we can make mistakes like:
 
-**Not checking the FD limit and memory limit**
+**Not checking the FD limit and memory limit:**
+
 You should always check the resources (like file descriptor and memory) limit required for the go program when you are creating huge number of goroutines and inside each goroutines either you are allocating large memory or dealing with files. Otherwise if memory limit will exceeds then memory leak may occur and if FD limit will exceed then goroutines may get stuck. 
 
-**Running goroutines with infinite loops** 
+**Running goroutines with infinite loops:**
+
 This is very interesting pitfall of using goroutines but this happens rarely. If you are interested to know know about this please [click](http://www.sarathlakshman.com/2016/06/15/pitfall-of-golang-scheduler)
 
 
 ## Keywords 
 
-### GOMAXPROCS
+_GOMAXPROCS_
 In current version of go, GOMAXPROCS is used to allow the number of processors to a particular go program. The hard limit is still on the number of CPU cores presented to the OS. The `GOMAXPROCS` option allows you to tune it down. By default, as of 1.5+ or 1.6+, `GOMAXPROCS` is set to `runtime.NumCPU()`. Fun trivia: in older versions of Go it was set to `1`, because the scheduler wasn’t as smart and GOMAXPROCS > 1 was extremely detrimental to performance.
  
