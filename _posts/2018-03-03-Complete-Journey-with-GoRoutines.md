@@ -112,6 +112,10 @@ In any particular Go application the number of processors is equal to the GOMAXP
 
 Every P has a local goroutine queue and also there is a global goroutine queue which contains runnable goroutines. Each M should be assigned to a P. Ps may have no Ms if they are blocked or in a system call. At any time, there are at most GOMAXPROCS number of P and only one M can run per P. More Ms can be created by the scheduler if required.
 
+![go runtime](/assets/images/stealing.png)
+<p align="center">
+  Fig 3 
+</p>
 
 In each round of scheduling scheduler finds a runnable G and execute it. Once a runnable G is found, it gets executed until it is blocked(as explained above). How does scheduler search for a runable goroutine. 
 
@@ -126,25 +130,41 @@ In each round of scheduling scheduler finds a runnable G and execute it. Once a 
 
 ```
 
-![go runtime](/assets/images/stealing.png)
-<p align="center">
-  Fig 3 
-</p>
-
 ## Common mistakes while using Go Routines and how to avoid them?
-If we are not aware about how goroutines internally work then we can make mistakes like:
 
-**Not checking the FD limit and memory limit:**
+**Not checking the FD limit and memory limit:**  You should always check the resources (like file descriptor and memory) limit required for your go program when you are creating huge number of goroutines and inside each goroutines either you are allocating large memory or dealing with files. Otherwise if memory limit will exceeds then memory leak may occur and if FD limit will exceed then goroutines may get stuck. 
 
-You should always check the resources (like file descriptor and memory) limit required for the go program when you are creating huge number of goroutines and inside each goroutines either you are allocating large memory or dealing with files. Otherwise if memory limit will exceeds then memory leak may occur and if FD limit will exceed then goroutines may get stuck. 
+**Running goroutines with infinite loops:**  Try executing the following golang code snippet.
+```go
+package main
+import "fmt"
+import "time"
+import "runtime"
 
-**Running goroutines with infinite loops:**
+func main() {
+    var x int
+    processors := runtime.GOMAXPROCS(0)
+    for i := 0; i < processors; i++ {
+        go func() {
+            for { x++ }
+        }()
+    }
+    time.Sleep(time.Second)
+    fmt.Println("x =", x)
+}
+```
+Lets execute the program:
 
-This is very interesting pitfall of using goroutines but this happens rarely. If you are interested to know know about this please [click](http://www.sarathlakshman.com/2016/06/15/pitfall-of-golang-scheduler)
+```
+$ GOMAXPROCS=8 go run test.go
+```
+
+We see that program never terminates. If we write the same program in C/C++, we will never observe such an issue. Now lets rerun the program with changing the line: `processors = runtime.GOMAXPROCS(0) -1`. Now the program will terminate properly and prints the result. This is surprising isn't it? To under this please read this [blog](http://www.sarathlakshman.com/2016/06/15/pitfall-of-golang-scheduler).
 
 
 ## Keywords 
 
-_GOMAXPROCS_
+*GOMAXPROCS*
+
 In current version of go, GOMAXPROCS is used to allow the number of processors to a particular go program. The hard limit is still on the number of CPU cores presented to the OS. The `GOMAXPROCS` option allows you to tune it down. By default, as of 1.5+ or 1.6+, `GOMAXPROCS` is set to `runtime.NumCPU()`. Fun trivia: in older versions of Go it was set to `1`, because the scheduler wasn’t as smart and GOMAXPROCS > 1 was extremely detrimental to performance.
  
