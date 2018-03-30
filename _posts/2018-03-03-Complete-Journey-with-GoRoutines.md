@@ -14,7 +14,7 @@ tags:
 
 GoRoutines are mainly related to the concurrency model in Golang. Whenever we want things to be done concurrently we use goroutines. 
 Wait. What is concurrency? 
-In very simple words, concurrency means dealing with a lot of things at once(does not need to be at the same time). For example, I am typing and I am thirsty then I will stop typing then drink water and then start typing again. Here I am dealing with two jobs(typing and drinking water) by some time slice which is said to be concurrent jobs.
+In very simple words, concurrency means dealing with a lot of things at once(does not need to be at the same time). For an example, consider, If I was both typing and thirsting, then I will stop typing then drink water and then start typing again. Here I am dealing with two jobs(typing and drinking water) by some time slice which is said to be concurrent jobs.
 
 ## Overview  
 
@@ -26,7 +26,7 @@ In this blog, I will mainly be talking about 
 * [Keywords](#keywords)
 
 ## What are Go Routines?
-GoRoutines are the way of doing the jobs concurrently in golang. They allow us to create and run the multiple methods or functions concurrently in the same address space inexpensively. We can say that the idea of GoRoutines are inspired by [CoRoutines](https://en.wikipedia.org/wiki/Coroutine). In my opinion the only difference is that CoRoutines supports the explicit mean of transferring the control to other CoRoutines while GoRoutines have it implicitly. (This point will get clearer in the scheduling section of this blog). GoRoutines are lightweight abstraction over threads, because their creation and destruction are very cheap as compared to threads and they are scheduled over OS threads. 
+Go Routines are the way of doing the jobs concurrently in golang. They allow us to create and run the multiple methods or functions concurrently in the same address space inexpensively. We can say that the idea of GoRoutines are inspired by [CoRoutines](https://en.wikipedia.org/wiki/Coroutine). In my opinion the only difference is that CoRoutines supports the explicit mean of transferring the control to other CoRoutines while GoRoutines have it implicitly. (This point will get clearer in the scheduling section of this blog). GoRoutines are lightweight abstraction over threads, because their creation and destruction are very cheap as compared to threads and they are scheduled over OS threads. 
 Executing the methods in the background is as easy as prepending the word `go` in a function call. Let’s see with a simple example.
 
 ```go
@@ -85,9 +85,11 @@ GoRoutines have benefit over threads in:
 
 **Switch cost:** This difference is mainly because of the difference in the scheduling of goroutines and threads. Threads are scheduled *preemptively* (If a process is running for more than a scheduler time slice, it would preempt the process and schedule execution of another runnable process on the same CPU), the schedular needs to save/restore all registers i.e. 16 general purpose registers, PC (Program Counter), SP (Stack Pointer), segment registers etc. While Go routines are scheduled *cooperatively*,(explained in the scheduling section) they do not directly talk to the OS kernel. When a goroutine switch occurs very few registers(say 3) like program counter and stack pointer need to be saved/restored. For more details refer [this](https://electronics.stackexchange.com/questions/115286/what-processor-registers-are-saved-and-recovered-in-a-context-switch).
 
+** explain why we need go routines ** 
+
 ## Scheduling of Go Routines
 
-As I have mentioned in the last paragraph that goroutines are cooperatively scheduled. In cooperative scheduling there is no concept of scheduler time slice, in this scheduling goroutines yield the control periodically when they are idle or logically blocked in order to run multiple goroutines concurrently.
+As I have mentioned in the last paragraph that goroutines are cooperatively scheduled. In cooperative scheduling there is no concept of scheduler time slice. In such scheduling goroutines yield the control periodically when they are idle or logically blocked in order to run multiple goroutines concurrently.
 The switch between goroutines happens only at well defined points, when an explicit call is made to the Go runtime scheduler. And those well defined points are like:
 - Channels send and receive operations, if those operations would block.
 - The Go statement, although there is no guarantee that new goroutine will be scheduled immediately.
@@ -99,7 +101,7 @@ Now lets see how they are scheduled internally. Go uses three entities to explai
 - OSThread (M)
 - Goroutines (G)
 
-In any particular Go application the number of processors is equal to the GOMAXPOCS, hence in any application it is equal to the no. of cores available for that application. OSThreads are scheduled over processors and goroutines are scheduled over OSThreads as explained in the Fig 2.
+In any particular Go application the number of threads available for go routines to run is equal to the GOMAXPROCS, which by default is equal to the number of cores available for that application. We can use the `runtime` package to change this number at runtime as well. OSThreads are scheduled over processors and goroutines are scheduled over OSThreads as explained in the Fig 2.
 
 `Go` has an M:N scheduler that also utilizes multiple processors. At any time, M goroutines need to be scheduled on N OS threads that runs on at most [GOMAXPROCS](#gomaxprocs) numbers of processors(`N <= GOMAXPROCS`). Go scheduler distribute runnable goroutines over multiple worker OS threads that runs on one or more processors.
 
@@ -159,12 +161,12 @@ Lets execute the program:
 $ GOMAXPROCS=8 go run test.go
 ```
 
-We see that program never terminates. If we write the same program in C/C++, we will never observe such an issue. Now lets rerun the program with changing the line: `processors = runtime.GOMAXPROCS(0) -1`. Now the program will terminate properly and prints the result. This is surprising isn't it? To under this please read this [blog](http://www.sarathlakshman.com/2016/06/15/pitfall-of-golang-scheduler).
+We see that program never terminates. If we write the same program in C/C++, we will never observe such an issue. Now lets rerun the program with changing the line: `processors = runtime.GOMAXPROCS(0) -1`. Now the program will terminate properly and prints the result. This is surprising isn't it? you can read this [blog](http://www.sarathlakshman.com/2016/06/15/pitfall-of-golang-scheduler) to read more about it.
 
 
 ## Keywords 
 
 *GOMAXPROCS*
 
-In current version of go, GOMAXPROCS is used to allow the number of processors to a particular go program. The hard limit is still on the number of CPU cores presented to the OS. The `GOMAXPROCS` option allows you to tune it down. By default, as of 1.5+ or 1.6+, `GOMAXPROCS` is set to `runtime.NumCPU()`. Fun trivia: in older versions of Go it was set to `1`, because the scheduler wasn’t as smart and GOMAXPROCS > 1 was extremely detrimental to performance.
+In current version of go, GOMAXPROCS is used to control the number of threads available for goroutine execution to a particular go program. The hard limit is still on the number of CPU cores presented to the OS. The `GOMAXPROCS` option allows you to tune it down. By default, as of 1.5+ or 1.6+, `GOMAXPROCS` is set to `runtime.NumCPU()`. Fun trivia: in older versions of Go it was set to `1`, because the scheduler wasn’t as smart and GOMAXPROCS > 1 was extremely detrimental to performance.
  
